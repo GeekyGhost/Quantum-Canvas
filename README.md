@@ -4,6 +4,9 @@ Quantum Canvas Ultimate is a web application that creates a real-time, symbiotic
 
 ---
 
+![Uploading Screenshot 2025-10-29 160832.png…]()
+
+
 ## 🚀 Key Features
 
 - Unified engine
