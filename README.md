@@ -1,4 +1,4 @@
-This is a work in progress, it's a for fun project. 
+This is a work in progress, it's a for fun project. MP4 export fixed
 
 # 🌌 Quantum Canvas Ultimate — Universal Physics & Music Engine v5.0
 
