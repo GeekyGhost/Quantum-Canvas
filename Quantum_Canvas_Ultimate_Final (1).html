@@ -1,0 +1,3057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Canvas - Ultimate Professional Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --lcars-orange: #FF9966;
+            --lcars-blue: #9999FF;
+            --lcars-purple: #CC99CC;
+            --lcars-red: #FF6666;
+            --lcars-yellow: #FFCC99;
+            --lcars-cream: #FFCC66;
+            --lcars-bg: #000000;
+            --lcars-panel: #1a0d2e;
+            --lcars-panel-dark: #0f0818;
+            --lcars-border: #663399;
+            --h2g2-green: #00FF00;
+            --h2g2-text: #00FFAA;
+            --h2g2-cyan: #00FFFF;
+        }
+
+        body {
+            background: var(--lcars-bg);
+            font-family: 'Rajdhani', 'Roboto Mono', monospace;
+            color: var(--lcars-cream);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .lcars-panel {
+            background: linear-gradient(135deg, var(--lcars-panel) 0%, var(--lcars-panel-dark) 100%);
+            border: 2px solid var(--lcars-border);
+            border-radius: 20px;
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(102, 51, 153, 0.3);
+        }
+
+        .lcars-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--lcars-orange), var(--lcars-blue), var(--lcars-purple));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.2;
+            animation: borderPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+        }
+
+        .lcars-button {
+            background: linear-gradient(135deg, var(--lcars-orange), var(--lcars-red));
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lcars-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .lcars-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .lcars-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--lcars-orange);
+        }
+
+        .lcars-button:active {
+            transform: scale(0.98);
+        }
+
+        .lcars-button.secondary {
+            background: linear-gradient(135deg, var(--lcars-blue), var(--lcars-purple));
+        }
+
+        .lcars-button.danger {
+            background: linear-gradient(135deg, var(--lcars-red), #cc0000);
+        }
+
+        .lcars-button.success {
+            background: linear-gradient(135deg, var(--h2g2-green), #00cc00);
+        }
+
+        .lcars-input {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--lcars-blue);
+            border-radius: 10px;
+            padding: 10px;
+            color: var(--h2g2-green);
+            font-family: 'Roboto Mono', monospace;
+            width: 100%;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .lcars-input:focus {
+            outline: none;
+            border-color: var(--lcars-orange);
+            box-shadow: 0 0 15px var(--lcars-orange);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .lcars-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--lcars-blue), var(--lcars-purple), var(--lcars-orange));
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .lcars-slider:hover {
+            box-shadow: 0 0 10px var(--lcars-orange);
+        }
+
+        .lcars-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--lcars-orange);
+            cursor: pointer;
+            border: 3px solid #000;
+            box-shadow: 0 0 10px var(--lcars-orange);
+            transition: all 0.2s;
+        }
+
+        .lcars-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px var(--lcars-orange);
+        }
+
+        .lcars-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--lcars-orange);
+            cursor: pointer;
+            border: 3px solid #000;
+            box-shadow: 0 0 10px var(--lcars-orange);
+        }
+
+        .lcars-header {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--lcars-orange);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px var(--lcars-orange);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .lcars-subheader {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--lcars-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--lcars-blue);
+            padding-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .parameter-group {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid var(--lcars-blue);
+            padding: 14px;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .parameter-group:hover {
+            background: rgba(0, 0, 0, 0.7);
+            border-left-color: var(--lcars-orange);
+            box-shadow: 0 0 15px rgba(255, 153, 102, 0.2);
+        }
+
+        .parameter-label {
+            color: var(--h2g2-text);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .value-display {
+            background: rgba(0, 255, 0, 0.15);
+            border: 2px solid var(--h2g2-green);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: var(--h2g2-green);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            display: inline-block;
+            min-width: 70px;
+            text-shadow: 0 0 5px var(--h2g2-green);
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 340px 1fr 400px;
+            grid-template-rows: 90px 1fr 80px;
+            gap: 15px;
+            height: 100vh;
+            padding: 15px;
+        }
+
+        .header-panel {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-panel {
+            grid-row: 2 / 4;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .center-panel {
+            grid-row: 2 / 3;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .right-panel {
+            grid-row: 2 / 4;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .footer-panel {
+            grid-column: 2 / 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .status-indicator.active {
+            background: var(--h2g2-green);
+            box-shadow: 0 0 15px var(--h2g2-green);
+        }
+
+        .status-indicator.inactive {
+            background: var(--lcars-red);
+            box-shadow: 0 0 10px var(--lcars-red);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        select.lcars-select {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--lcars-blue);
+            border-radius: 10px;
+            padding: 10px;
+            color: var(--h2g2-green);
+            font-family: 'Roboto Mono', monospace;
+            cursor: pointer;
+            width: 100%;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        select.lcars-select:focus {
+            outline: none;
+            border-color: var(--lcars-orange);
+            box-shadow: 0 0 15px var(--lcars-orange);
+        }
+
+        select.lcars-select option {
+            background: var(--lcars-panel-dark);
+            color: var(--h2g2-green);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--lcars-blue), var(--lcars-purple));
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--lcars-orange), var(--lcars-red));
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .piano-overlay {
+            position: fixed;
+            bottom: -400px;
+            right: 20px;
+            width: 70%;
+            max-width: 900px;
+            background: linear-gradient(135deg, var(--lcars-panel) 0%, var(--lcars-panel-dark) 100%);
+            border: 3px solid var(--lcars-orange);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 -10px 50px rgba(255, 153, 102, 0.5);
+            transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .piano-overlay.open {
+            bottom: 0;
+        }
+
+        .piano-overlay.minimized {
+            bottom: -350px;
+        }
+
+        .piano-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--lcars-blue);
+        }
+
+        .piano-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--lcars-orange);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .piano-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .piano-keyboard {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 200px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .piano-key {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.1s;
+            user-select: none;
+        }
+
+        .piano-key.white {
+            width: 60px;
+            height: 200px;
+            background: linear-gradient(180deg, #ffffff 0%, #e0e0e0 100%);
+            border: 2px solid #000;
+            border-radius: 0 0 8px 8px;
+            margin: 0 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .piano-key.white:hover {
+            background: linear-gradient(180deg, #f0f0f0 0%, #d0d0d0 100%);
+            transform: translateY(2px);
+        }
+
+        .piano-key.white:active, .piano-key.white.playing {
+            background: linear-gradient(180deg, var(--lcars-orange) 0%, var(--lcars-red) 100%);
+            transform: translateY(4px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .piano-key.black {
+            width: 40px;
+            height: 130px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
+            border: 2px solid #000;
+            border-radius: 0 0 4px 4px;
+            position: absolute;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .piano-key.black:hover {
+            background: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
+            transform: translateY(2px);
+        }
+
+        .piano-key.black:active, .piano-key.black.playing {
+            background: linear-gradient(180deg, var(--lcars-purple) 0%, var(--lcars-blue) 100%);
+            transform: translateY(4px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .key-label {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Roboto Mono', monospace;
+            color: #666;
+            pointer-events: none;
+        }
+
+        .piano-key.black .key-label {
+            color: #999;
+            bottom: 8px;
+        }
+
+        .piano-key.playing .key-label {
+            color: #fff;
+        }
+
+        .piano-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--lcars-blue);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            padding: 10px 18px;
+            color: var(--lcars-blue);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .tab:hover {
+            background: rgba(153, 153, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: var(--lcars-blue);
+            color: #000;
+            box-shadow: 0 -5px 15px rgba(153, 153, 255, 0.5);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--lcars-orange), var(--lcars-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--lcars-purple);
+            border-radius: 10px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--lcars-purple);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            color: var(--h2g2-green);
+            font-weight: 700;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .h2g2-quote {
+            background: rgba(0, 255, 170, 0.1);
+            border-left: 4px solid var(--h2g2-text);
+            padding: 12px;
+            margin: 12px 0;
+            font-style: italic;
+            color: var(--h2g2-text);
+            font-size: 13px;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+
+        .pattern-cell {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--lcars-blue);
+            padding: 10px;
+            text-align: center;
+            color: var(--h2g2-green);
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+
+        .pattern-cell:hover {
+            background: rgba(255, 153, 102, 0.3);
+            border-color: var(--lcars-orange);
+            transform: scale(1.05);
+        }
+
+        .pattern-cell.active {
+            background: var(--lcars-orange);
+            color: #000;
+            box-shadow: 0 0 20px var(--lcars-orange);
+            animation: cellPulse 0.5s ease-out;
+        }
+
+        @keyframes cellPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .sequence-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .preset-button {
+            background: rgba(153, 153, 255, 0.2);
+            border: 2px solid var(--lcars-blue);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--lcars-blue);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 4px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .preset-button:hover {
+            background: rgba(255, 153, 102, 0.4);
+            border-color: var(--lcars-orange);
+            color: var(--lcars-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 153, 102, 0.3);
+        }
+
+        .recording-indicator {
+            display: none;
+            color: var(--lcars-red);
+            font-weight: 700;
+            animation: blink 1s infinite;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .recording-indicator.active {
+            display: inline-block;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .waveform-indicator {
+            height: 60px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--lcars-blue);
+            border-radius: 10px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waveform-bar {
+            position: absolute;
+            bottom: 0;
+            width: 1.5%;
+            background: linear-gradient(to top, var(--h2g2-green), var(--lcars-blue), var(--lcars-purple));
+            transition: height 0.05s ease-out;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .lcars-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--lcars-orange);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .evolution-status {
+            background: rgba(0, 255, 170, 0.1);
+            border: 2px solid var(--h2g2-text);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+        }
+
+        .evolution-status .gen-label {
+            color: var(--lcars-orange);
+            font-weight: 700;
+        }
+
+        .evolution-status .fitness-value {
+            color: var(--h2g2-green);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container">
+        <!-- Header Panel -->
+        <div class="header-panel lcars-panel">
+            <div class="logo-container">
+                <div class="logo">∞</div>
+                <div>
+                    <div class="lcars-header">QUANTUM CANVAS ULTIMATE</div>
+                    <div style="color: var(--h2g2-text); font-size: 12px; font-style: italic; font-family: 'Roboto Mono', monospace;">
+                        Universal Physics & Music Engine v5.0 | "The Universe is made of stories, not of atoms"
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="margin-bottom: 8px;">
+                    <span class="status-indicator" id="audioStatus"></span>
+                    <span style="font-size: 13px; font-weight: 600;">AUDIO ENGINE</span>
+                    <span id="audioStatusText" style="font-size: 10px; color: var(--lcars-yellow); margin-left: 5px;">(Click START)</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span class="status-indicator" id="visualStatus"></span>
+                    <span style="font-size: 13px; font-weight: 600;">PHYSICS ENGINE</span>
+                </div>
+                <div>
+                    <span class="status-indicator inactive" id="recordStatus"></span>
+                    <span style="font-size: 13px; font-weight: 600;">RECORDING</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Panel - Pattern & Music Control -->
+        <div class="left-panel lcars-panel">
+            <div class="lcars-subheader">🎵 PATTERN SEQUENCER</div>
+            
+            <div class="parameter-group">
+                <div class="parameter-label">
+                    <span>Pattern Sequence (16-step)</span>
+                    <button class="lcars-button" style="padding: 4px 12px; font-size: 10px;" onclick="generateRandomPattern()">RANDOM</button>
+                </div>
+                <div class="sequence-grid" id="sequenceGrid"></div>
+                <div style="margin-top: 8px; display: flex; gap: 5px;">
+                    <button class="lcars-button success" style="flex: 1; padding: 8px; font-size: 10px;" onclick="clearPattern()">CLEAR</button>
+                    <button class="lcars-button secondary" style="flex: 1; padding: 8px; font-size: 10px;" onclick="reversePattern()">REVERSE</button>
+                </div>
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Pattern Length: <span class="value-display" id="patternLength">16</span></div>
+                <input type="range" class="lcars-slider" id="patternLengthSlider" min="4" max="32" value="16" oninput="updatePatternLength()">
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Pattern Mode</div>
+                <select class="lcars-select" id="patternMode" onchange="updatePatternMode()">
+                    <option value="melody" selected>Melody Control</option>
+                    <option value="harmony">Harmony/Chords</option>
+                    <option value="rhythm">Rhythm/Duration</option>
+                    <option value="filter">Filter Modulation</option>
+                    <option value="visual">Visual Morph</option>
+                    <option value="physics">Physics Force</option>
+                    <option value="color">Color Shift</option>
+                </select>
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Step: <span class="value-display" id="currentStep">0</span> / <span id="totalSteps">16</span></div>
+            </div>
+
+            <div class="lcars-subheader" style="margin-top: 20px;">🎼 MUSIC THEORY</div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Scale System</div>
+                <select class="lcars-select" id="scaleSelect" onchange="updateScale()">
+                    <option value="pentatonic" selected>Pentatonic Major</option>
+                    <option value="pentatonicMinor">Pentatonic Minor</option>
+                    <option value="major">Major (Ionian)</option>
+                    <option value="minor">Natural Minor</option>
+                    <option value="harmonicMinor">Harmonic Minor</option>
+                    <option value="melodicMinor">Melodic Minor</option>
+                    <option value="dorian">Dorian</option>
+                    <option value="phrygian">Phrygian</option>
+                    <option value="lydian">Lydian</option>
+                    <option value="mixolydian">Mixolydian</option>
+                    <option value="locrian">Locrian</option>
+                    <option value="wholeTone">Whole Tone</option>
+                    <option value="diminished">Diminished</option>
+                    <option value="augmented">Augmented</option>
+                    <option value="bluesScale">Blues Scale</option>
+                    <option value="japanese">Japanese (Hirajoshi)</option>
+                    <option value="arabic">Arabic (Maqam)</option>
+                    <option value="indian">Indian (Raga)</option>
+                    <option value="chinese">Chinese (Pentatonic)</option>
+                </select>
+            </div>
+
+            <div class="two-column">
+                <div class="parameter-group" style="margin: 0;">
+                    <div class="parameter-label">Root: <span class="value-display" id="rootValue">C</span></div>
+                    <select class="lcars-select" id="rootNote" onchange="updateRoot()">
+                        <option value="C" selected>C</option>
+                        <option value="C#">C#</option>
+                        <option value="D">D</option>
+                        <option value="D#">D#</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                        <option value="F#">F#</option>
+                        <option value="G">G</option>
+                        <option value="G#">G#</option>
+                        <option value="A">A</option>
+                        <option value="A#">A#</option>
+                        <option value="B">B</option>
+                    </select>
+                </div>
+                <div class="parameter-group" style="margin: 0;">
+                    <div class="parameter-label">Octave: <span class="value-display" id="octaveValue">4</span></div>
+                    <input type="range" class="lcars-slider" id="octave" min="2" max="6" value="4" oninput="updateOctave()">
+                </div>
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Tempo: <span class="value-display" id="tempoValue">120</span> BPM</div>
+                <input type="range" class="lcars-slider" id="tempo" min="60" max="200" value="120" oninput="updateTempo()">
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Humanization: <span class="value-display" id="humanizationValue">30</span>%</div>
+                <input type="range" class="lcars-slider" id="humanization" min="0" max="100" value="30" oninput="updateHumanization()">
+            </div>
+
+            <div class="h2g2-quote">
+                "In the beginning the Universe was created. This has made a lot of people very angry and been widely regarded as a bad move."
+            </div>
+
+            <div class="lcars-subheader" style="margin-top: 20px;">📦 PRESETS</div>
+            <div style="padding: 5px;">
+                <button class="preset-button" onclick="loadPreset('ambient')">Ambient Space</button>
+                <button class="preset-button" onclick="loadPreset('fractal')">Fractal Dream</button>
+                <button class="preset-button" onclick="loadPreset('quantum')">Quantum Field</button>
+                <button class="preset-button" onclick="loadPreset('cosmic')">Cosmic Dance</button>
+                <button class="preset-button" onclick="loadPreset('techno')">Techno Drive</button>
+                <button class="preset-button" onclick="loadPreset('organic')">Organic Flow</button>
+            </div>
+
+            <div class="lcars-subheader" style="margin-top: 20px;">🧬 EVOLUTION ENGINE</div>
+            <div class="parameter-group">
+                <div class="parameter-label">Evolution Mode</div>
+                <select class="lcars-select" id="evolutionMode" onchange="updateEvolutionMode()">
+                    <option value="off">Disabled</option>
+                    <option value="particles">Particle Behavior</option>
+                    <option value="colors">Color Evolution</option>
+                    <option value="patterns">Pattern Discovery</option>
+                    <option value="physics">Physics Parameters</option>
+                </select>
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Population: <span class="value-display" id="populationValue">20</span></div>
+                <input type="range" class="lcars-slider" id="populationSize" min="10" max="50" value="20" oninput="updatePopulation()">
+            </div>
+
+            <div class="parameter-group">
+                <div class="parameter-label">Mutation Rate: <span class="value-display" id="mutationValue">0.15</span></div>
+                <input type="range" class="lcars-slider" id="mutationRate" min="0.01" max="0.5" step="0.01" value="0.15" oninput="updateMutation()">
+            </div>
+
+            <div class="two-column">
+                <button class="lcars-button success" style="padding: 8px; font-size: 10px;" onclick="startEvolution()">EVOLVE</button>
+                <button class="lcars-button danger" style="padding: 8px; font-size: 10px;" onclick="stopEvolution()">STOP</button>
+            </div>
+
+            <div class="evolution-status" id="evolutionStatus">
+                <div><span class="gen-label">Generation:</span> <span class="fitness-value" id="genNumber">0</span></div>
+                <div><span class="gen-label">Best Fitness:</span> <span class="fitness-value" id="bestFitness">0.00</span></div>
+                <div><span class="gen-label">Avg Fitness:</span> <span class="fitness-value" id="avgFitness">0.00</span></div>
+            </div>
+        </div>
+
+        <!-- Center Panel - Visualizer -->
+        <div class="center-panel lcars-panel">
+            <div class="canvas-overlay">
+                <button class="lcars-button" onclick="togglePlayback()" id="playButton">▶ START</button>
+                <button class="lcars-button danger" onclick="stopPlayback()">■ STOP</button>
+                <button class="lcars-button secondary" onclick="toggleRecording()" id="recordButton">⚫ RECORD</button>
+                <span class="recording-indicator" id="recordingIndicator">⚫ RECORDING</span>
+            </div>
+            <canvas id="visualizer"></canvas>
+        </div>
+
+        <!-- Right Panel - Physics & Visual Controls -->
+        <div class="right-panel lcars-panel">
+            <div class="tab-container">
+                <div class="tab active" onclick="switchTab('physics')">PHYSICS</div>
+                <div class="tab" onclick="switchTab('particles')">PARTICLES</div>
+                <div class="tab" onclick="switchTab('visuals')">VISUALS</div>
+                <div class="tab" onclick="switchTab('audio')">AUDIO</div>
+                <div class="tab" onclick="switchTab('effects')">EFFECTS</div>
+            </div>
+
+            <!-- Physics Tab -->
+            <div id="physics" class="tab-content active">
+                <div class="lcars-subheader">⚛️ PHYSICS ENGINE</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Physics Model</div>
+                    <select class="lcars-select" id="physicsModel" onchange="updatePhysicsModel()">
+                        <option value="lorenz" selected>Lorenz Attractor (Chaos)</option>
+                        <option value="rossler">Rössler Attractor</option>
+                        <option value="gravity">Orbital Gravity (N-body)</option>
+                        <option value="wave">Wave Interference</option>
+                        <option value="pendulum">Double Pendulum</option>
+                        <option value="vortex">Vortex Dynamics</option>
+                        <option value="flocking">Flocking (Boids)</option>
+                        <option value="fluid">Fluid Dynamics</option>
+                        <option value="magnetic">Magnetic Field</option>
+                        <option value="quantum">Quantum Probability</option>
+                        <option value="fractal">Fractal Growth</option>
+                        <option value="brownian">Brownian Motion</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Force Strength: <span class="value-display" id="forceValue">1.0</span></div>
+                    <input type="range" class="lcars-slider" id="forceStrength" min="0" max="5" step="0.1" value="1.0" oninput="updateForce()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Damping: <span class="value-display" id="dampingValue">0.95</span></div>
+                    <input type="range" class="lcars-slider" id="damping" min="0.8" max="1" step="0.01" value="0.95" oninput="updateDamping()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Audio Reactivity: <span class="value-display" id="audioDisruptValue">5.0</span></div>
+                    <input type="range" class="lcars-slider" id="audioDisrupt" min="0" max="20" step="0.1" value="5.0" oninput="updateAudioDisruption()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Time Scale: <span class="value-display" id="timeScaleValue">1.0</span>x</div>
+                    <input type="range" class="lcars-slider" id="timeScale" min="0.1" max="5" step="0.1" value="1.0" oninput="updateTimeScale()">
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" class="lcars-checkbox" id="boundaryWrap" onchange="updateBoundary()">
+                    <label style="color: var(--h2g2-text); font-size: 12px;">Wrap at Boundaries</label>
+                </div>
+
+                <div class="h2g2-quote">
+                    "Space is big. Really big. You just won't believe how vastly, hugely, mind-bogglingly big it is."
+                </div>
+            </div>
+
+            <!-- Particles Tab -->
+            <div id="particles" class="tab-content">
+                <div class="lcars-subheader">✨ PARTICLE SYSTEM</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Particle Type</div>
+                    <select class="lcars-select" id="particleType" onchange="updateParticleType()">
+                        <option value="spheres" selected>Spheres (Standard)</option>
+                        <option value="points">Points (Fast)</option>
+                        <option value="cubes">Cubes (Geometric)</option>
+                        <option value="tetrahedrons">Tetrahedrons</option>
+                        <option value="octahedrons">Octahedrons</option>
+                        <option value="icosahedrons">Icosahedrons</option>
+                        <option value="torus">Torus (Donuts)</option>
+                        <option value="cylinders">Cylinders</option>
+                        <option value="cones">Cones</option>
+                        <option value="stars">Stars (Procedural)</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Formation Pattern</div>
+                    <select class="lcars-select" id="visualPattern" onchange="updateVisualPattern()">
+                        <option value="particles" selected>Random Cloud</option>
+                        <option value="spiral-fibonacci">Fibonacci Spiral</option>
+                        <option value="spiral-archimedean">Archimedean Spiral</option>
+                        <option value="flower-rose">Rose Curve</option>
+                        <option value="flower-sunflower">Sunflower Pattern</option>
+                        <option value="butterfly">Butterfly Curve</option>
+                        <option value="star-5">5-Point Star</option>
+                        <option value="star-7">7-Point Star</option>
+                        <option value="galaxy">Galaxy Spiral</option>
+                        <option value="vortex">Vortex Swirl</option>
+                        <option value="dna">DNA Double Helix</option>
+                        <option value="torus-knot">Torus Knot</option>
+                        <option value="sphere-surface">Sphere Surface</option>
+                        <option value="cube-lattice">Cubic Lattice</option>
+                        <option value="sierpinski">Sierpinski Triangle</option>
+                        <option value="mandelbrot">Mandelbrot Set</option>
+                        <option value="julia">Julia Set</option>
+                        <option value="dragon">Dragon Curve</option>
+                        <option value="koch">Koch Snowflake</option>
+                        <option value="apollonian">Apollonian Gasket</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Particle Count: <span class="value-display" id="particleCountValue">3000</span></div>
+                    <input type="range" class="lcars-slider" id="particleCount" min="500" max="15000" step="100" value="3000" oninput="updateParticleCount()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Particle Size: <span class="value-display" id="particleSizeValue">1.0</span></div>
+                    <input type="range" class="lcars-slider" id="particleSize" min="0.1" max="5" step="0.1" value="1.0" oninput="updateParticleSize()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Size Variation: <span class="value-display" id="sizeVariationValue">0</span>%</div>
+                    <input type="range" class="lcars-slider" id="sizeVariation" min="0" max="100" value="0" oninput="updateSizeVariation()">
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" class="lcars-checkbox" id="trailEffect" onchange="updateTrails()">
+                    <label style="color: var(--h2g2-text); font-size: 12px;">Motion Trails</label>
+                </div>
+
+                <div class="h2g2-quote">
+                    "The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-two."
+                </div>
+            </div>
+
+            <!-- Visuals Tab -->
+            <div id="visuals" class="tab-content">
+                <div class="lcars-subheader">🌌 VISUAL ENGINE</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Color Mode</div>
+                    <select class="lcars-select" id="gradientMode" onchange="updateGradientMode()">
+                        <option value="solid">Solid Color</option>
+                        <option value="radial">Radial Gradient</option>
+                        <option value="frequency" selected>Audio Frequency</option>
+                        <option value="velocity">Velocity-based</option>
+                        <option value="time">Time Animation</option>
+                        <option value="depth">Depth (Z-position)</option>
+                        <option value="rainbow">Rainbow Cycle</option>
+                        <option value="temperature">Temperature Map</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Base Hue: <span class="value-display" id="baseHueValue">180</span>°</div>
+                    <input type="range" class="lcars-slider" id="baseHue" min="0" max="360" value="180" oninput="updateBaseHue()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Hue Range: <span class="value-display" id="hueRangeValue">60</span>°</div>
+                    <input type="range" class="lcars-slider" id="hueRange" min="0" max="360" value="60" oninput="updateHueRange()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Saturation: <span class="value-display" id="saturationValue">0.8</span></div>
+                    <input type="range" class="lcars-slider" id="saturation" min="0" max="1" step="0.01" value="0.8" oninput="updateSaturation()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Brightness: <span class="value-display" id="brightnessValue">0.5</span></div>
+                    <input type="range" class="lcars-slider" id="brightness" min="0" max="1" step="0.01" value="0.5" oninput="updateBrightness()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Camera Distance: <span class="value-display" id="cameraDistValue">50</span></div>
+                    <input type="range" class="lcars-slider" id="cameraDist" min="10" max="200" value="50" oninput="updateCameraDistance()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Rotation Speed: <span class="value-display" id="rotationSpeedValue">1.0</span></div>
+                    <input type="range" class="lcars-slider" id="rotationSpeed" min="-5" max="5" step="0.1" value="1.0" oninput="updateRotationSpeed()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">FOV: <span class="value-display" id="fovValue">75</span>°</div>
+                    <input type="range" class="lcars-slider" id="fov" min="30" max="120" value="75" oninput="updateFOV()">
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" class="lcars-checkbox" id="glowEffect" checked onchange="updateGlow()">
+                    <label style="color: var(--h2g2-text); font-size: 12px;">Glow/Bloom Effect</label>
+                </div>
+            </div>
+
+            <!-- Audio Tab -->
+            <div id="audio" class="tab-content">
+                <div class="lcars-subheader">📊 AUDIO ENGINE</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Waveform</div>
+                    <select class="lcars-select" id="waveform" onchange="updateWaveform()">
+                        <option value="sine">Sine (Pure)</option>
+                        <option value="triangle" selected>Triangle (Warm)</option>
+                        <option value="sawtooth">Sawtooth (Bright)</option>
+                        <option value="square">Square (Hollow)</option>
+                        <option value="fatsawtooth">Fat Sawtooth</option>
+                        <option value="fatsquare">Fat Square</option>
+                        <option value="pwm">PWM (Pulse Width)</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Polyphony: <span class="value-display" id="polyphonyValue">8</span></div>
+                    <input type="range" class="lcars-slider" id="polyphony" min="1" max="32" value="8" oninput="updatePolyphony()">
+                </div>
+
+                <div class="lcars-subheader" style="margin-top: 15px;">ENVELOPE (ADSR)</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Attack: <span class="value-display" id="attackValue">0.1</span>s</div>
+                    <input type="range" class="lcars-slider" id="attack" min="0.001" max="2" step="0.001" value="0.1" oninput="updateEnvelope()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Decay: <span class="value-display" id="decayValue">0.2</span>s</div>
+                    <input type="range" class="lcars-slider" id="decay" min="0.001" max="2" step="0.001" value="0.2" oninput="updateEnvelope()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Sustain: <span class="value-display" id="sustainValue">0.5</span></div>
+                    <input type="range" class="lcars-slider" id="sustain" min="0" max="1" step="0.01" value="0.5" oninput="updateEnvelope()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Release: <span class="value-display" id="releaseValue">0.5</span>s</div>
+                    <input type="range" class="lcars-slider" id="release" min="0.001" max="3" step="0.001" value="0.5" oninput="updateEnvelope()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Master Volume: <span class="value-display" id="volumeValue">-12</span>dB</div>
+                    <input type="range" class="lcars-slider" id="volume" min="-40" max="0" value="-12" oninput="updateVolume()">
+                </div>
+
+                <div class="h2g2-quote">
+                    "Don't Panic."
+                </div>
+
+                <div class="waveform-indicator" id="waveformDisplay"></div>
+            </div>
+
+            <!-- Effects Tab -->
+            <div id="effects" class="tab-content">
+                <div class="lcars-subheader">✨ AUDIO EFFECTS</div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Filter Type</div>
+                    <select class="lcars-select" id="filterType" onchange="updateFilterType()">
+                        <option value="lowpass" selected>Low Pass</option>
+                        <option value="highpass">High Pass</option>
+                        <option value="bandpass">Band Pass</option>
+                        <option value="notch">Notch</option>
+                        <option value="allpass">All Pass</option>
+                    </select>
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Filter Cutoff: <span class="value-display" id="filterValue">2000</span>Hz</div>
+                    <input type="range" class="lcars-slider" id="filterCutoff" min="100" max="10000" value="2000" oninput="updateFilter()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Resonance: <span class="value-display" id="resonanceValue">1.0</span></div>
+                    <input type="range" class="lcars-slider" id="resonance" min="0.1" max="30" step="0.1" value="1" oninput="updateResonance()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Reverb: <span class="value-display" id="reverbValue">0.3</span></div>
+                    <input type="range" class="lcars-slider" id="reverb" min="0" max="1" step="0.01" value="0.3" oninput="updateReverb()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Reverb Decay: <span class="value-display" id="reverbDecayValue">2.0</span>s</div>
+                    <input type="range" class="lcars-slider" id="reverbDecay" min="0.1" max="10" step="0.1" value="2.0" oninput="updateReverbDecay()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Delay Time: <span class="value-display" id="delayTimeValue">0.25</span>s</div>
+                    <input type="range" class="lcars-slider" id="delayTime" min="0.01" max="2" step="0.01" value="0.25" oninput="updateDelay()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Delay Feedback: <span class="value-display" id="delayFeedbackValue">0.4</span></div>
+                    <input type="range" class="lcars-slider" id="delayFeedback" min="0" max="0.95" step="0.01" value="0.4" oninput="updateDelayFeedback()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Distortion: <span class="value-display" id="distortionValue">0.0</span></div>
+                    <input type="range" class="lcars-slider" id="distortion" min="0" max="1" step="0.01" value="0" oninput="updateDistortion()">
+                </div>
+
+                <div class="parameter-group">
+                    <div class="parameter-label">Chorus: <span class="value-display" id="chorusValue">0.0</span></div>
+                    <input type="range" class="lcars-slider" id="chorus" min="0" max="1" step="0.01" value="0" oninput="updateChorus()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Panel -->
+        <div class="footer-panel lcars-panel">
+            <div class="stats-panel" style="flex: 1;">
+                <div class="stat-item">
+                    <div class="stat-label">Physics FPS</div>
+                    <div class="stat-value" id="fpsCoun">60</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Particles</div>
+                    <div class="stat-value" id="particleCount2000">3000</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Audio Quality</div>
+                    <div class="stat-value" id="audioQuality">HIGH</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">CPU Load</div>
+                    <div class="stat-value" id="cpuLoad">~</div>
+                </div>
+            </div>
+            <div class="piano-toggle-container">
+                <button class="lcars-button secondary" onclick="togglePiano()" id="pianoToggleBtn">
+                    🎹 KEYBOARD
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Piano Keyboard Overlay -->
+    <div class="piano-overlay" id="pianoOverlay">
+        <div class="piano-header">
+            <div class="piano-title">🎹 INTERACTIVE KEYBOARD</div>
+            <div class="piano-controls">
+                <button class="lcars-button secondary" style="padding: 8px 16px; font-size: 11px;" onclick="minimizePiano()">−</button>
+                <button class="lcars-button danger" style="padding: 8px 16px; font-size: 11px;" onclick="closePiano()">×</button>
+            </div>
+        </div>
+        <div class="piano-keyboard" id="pianoKeyboard"></div>
+    </div>
+
+    <script>
+        // ===== GLOBAL VARIABLES =====
+        let synth, filter, reverb, delay, distortion, chorus, analyser;
+        let scene, camera, renderer, particles = [];
+        let isPlaying = false;
+        let isRecording = false;
+        let audioInitialized = false;
+        let currentStep = 0;
+        let pattern = Array(16).fill(0);
+        let patternLength = 16;
+        let patternMode = 'melody';
+        let tempo = 120;
+        let octave = 4;
+        let mediaRecorder, recordedChunks = [];
+        let forceStrength = 1.0;
+        let timeScale = 1.0;
+        let boundaryWrap = false;
+        let trailEffect = false;
+        let glowEffect = true;
+        let sizeVariation = 0;
+        let brightness = 0.5;
+        let rotationSpeed = 1.0;
+        
+        // Physics parameters
+        let physicsModel = 'lorenz';
+        let damping = 0.95;
+        
+        // ===== EVOLUTION ENGINE VARIABLES =====
+        let evolutionMode = 'off';
+        let evolutionActive = false;
+        let evolutionGeneration = 0;
+        let evolutionPopulation = [];
+        let populationSize = 20;
+        let mutationRate = 0.15;
+        let eliteCount = 2; // Keep top 2 individuals
+        let evolutionInterval = null;
+        let currentBestFitness = 0;
+        let evolutionTarget = null;
+        let audioDisruption = 5.0;
+        
+        // Visual parameters
+        let visualPattern = 'particles';
+        let particleType = 'spheres';
+        let particleCount = 3000;
+        let gradientMode = 'frequency';
+        let baseHue = 180;
+        let hueRange = 60;
+        let saturation = 0.8;
+        let particleSize = 1.0;
+        let cameraDistance = 50;
+        let fieldOfView = 75;
+        
+        // Music parameters
+        let humanization = 30;
+        let rootNote = 'C';
+        let scale = [0, 2, 4, 7, 9];
+        
+        // Animation
+        let time = 0;
+        let fpsCounter = 0;
+        let lastFrameTime = Date.now();
+        let renderBudget = 60;
+
+        // Music theory data
+        const scales = {
+            pentatonic: [0, 2, 4, 7, 9],
+            pentatonicMinor: [0, 3, 5, 7, 10],
+            major: [0, 2, 4, 5, 7, 9, 11],
+            minor: [0, 2, 3, 5, 7, 8, 10],
+            harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
+            melodicMinor: [0, 2, 3, 5, 7, 9, 11],
+            dorian: [0, 2, 3, 5, 7, 9, 10],
+            phrygian: [0, 1, 3, 5, 7, 8, 10],
+            lydian: [0, 2, 4, 6, 7, 9, 11],
+            mixolydian: [0, 2, 4, 5, 7, 9, 10],
+            locrian: [0, 1, 3, 5, 6, 8, 10],
+            wholeTone: [0, 2, 4, 6, 8, 10],
+            diminished: [0, 2, 3, 5, 6, 8, 9, 11],
+            augmented: [0, 3, 4, 7, 8, 11],
+            bluesScale: [0, 3, 5, 6, 7, 10],
+            japanese: [0, 1, 5, 7, 8],
+            arabic: [0, 1, 4, 5, 7, 8, 11],
+            indian: [0, 1, 3, 5, 7, 8, 10],
+            chinese: [0, 2, 4, 7, 9]
+        };
+
+        // ===== INITIALIZATION =====
+        async function init() {
+            try {
+                initVisuals();
+                initPiano();
+                initWaveform();
+                initSequenceGrid();
+                
+                document.getElementById('visualStatus').classList.add('active');
+                
+                animate();
+                
+                console.log('✓ Quantum Canvas Ultimate initialized');
+            } catch (error) {
+                console.error('Init error:', error);
+            }
+        }
+
+        async function ensureAudioStarted() {
+            if (!audioInitialized) {
+                try {
+                    await Tone.start();
+                    initAudio();
+                    audioInitialized = true;
+                    document.getElementById('audioStatus').classList.add('active');
+                    document.getElementById('audioStatusText').style.display = 'none';
+                    console.log('✓ Audio engine started');
+                } catch (error) {
+                    console.error('Audio start failed:', error);
+                }
+            }
+        }
+
+        function initAudio() {
+            synth = new Tone.PolySynth(Tone.Synth, {
+                maxPolyphony: 8,
+                oscillator: { type: 'triangle' },
+                envelope: {
+                    attack: 0.1,
+                    decay: 0.2,
+                    sustain: 0.5,
+                    release: 0.5
+                },
+                volume: -12
+            });
+
+            filter = new Tone.Filter({
+                frequency: 2000,
+                type: 'lowpass',
+                Q: 1
+            });
+
+            reverb = new Tone.Reverb({
+                decay: 2,
+                wet: 0.3
+            });
+
+            delay = new Tone.FeedbackDelay({
+                delayTime: 0.25,
+                feedback: 0.4,
+                wet: 0.2
+            });
+
+            distortion = new Tone.Distortion({
+                distortion: 0,
+                wet: 0,
+                oversample: '4x'
+            });
+
+            chorus = new Tone.Chorus({
+                frequency: 1.5,
+                delayTime: 3.5,
+                depth: 0,
+                wet: 0
+            }).start();
+
+            analyser = new Tone.Analyser('waveform', 512);
+
+            synth.connect(filter);
+            filter.connect(distortion);
+            distortion.connect(chorus);
+            chorus.connect(delay);
+            delay.connect(reverb);
+            reverb.connect(analyser);
+            analyser.toDestination();
+        }
+
+        function initVisuals() {
+            const canvas = document.getElementById('visualizer');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.0008);
+            
+            camera = new THREE.PerspectiveCamera(fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            camera.position.z = cameraDistance;
+
+            renderer = new THREE.WebGLRenderer({ 
+                canvas, 
+                antialias: true, 
+                alpha: false,
+                powerPreference: 'high-performance'
+            });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x000000, 1);
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            // Add dynamic point lights for atmosphere
+            const light1 = new THREE.PointLight(0x9999ff, 0.8, 100);
+            light1.position.set(30, 30, 30);
+            scene.add(light1);
+            
+            const light2 = new THREE.PointLight(0xff9966, 0.8, 100);
+            light2.position.set(-30, -30, 30);
+            scene.add(light2);
+
+            createParticles();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            });
+        }
+
+        function createParticles() {
+            particles.forEach(p => {
+                scene.remove(p.mesh);
+                if (p.geometry) p.geometry.dispose();
+                if (p.material) p.material.dispose();
+            });
+            particles = [];
+
+            // Optimize for performance
+            const actualCount = Math.min(particleCount, 15000);
+            
+            for (let i = 0; i < actualCount; i++) {
+                let geometry;
+                const size = particleSize * (1 + (Math.random() - 0.5) * sizeVariation / 100);
+                
+                switch(particleType) {
+                    case 'points':
+                        geometry = new THREE.BufferGeometry();
+                        geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3));
+                        break;
+                    case 'cubes':
+                        geometry = new THREE.BoxGeometry(size * 0.3, size * 0.3, size * 0.3);
+                        break;
+                    case 'tetrahedrons':
+                        geometry = new THREE.TetrahedronGeometry(size * 0.3);
+                        break;
+                    case 'octahedrons':
+                        geometry = new THREE.OctahedronGeometry(size * 0.3);
+                        break;
+                    case 'icosahedrons':
+                        geometry = new THREE.IcosahedronGeometry(size * 0.3);
+                        break;
+                    case 'torus':
+                        geometry = new THREE.TorusGeometry(size * 0.2, size * 0.1, 8, 12);
+                        break;
+                    case 'cylinders':
+                        geometry = new THREE.CylinderGeometry(size * 0.15, size * 0.15, size * 0.4, 8);
+                        break;
+                    case 'cones':
+                        geometry = new THREE.ConeGeometry(size * 0.2, size * 0.4, 8);
+                        break;
+                    case 'stars':
+                        geometry = createStarGeometry(size * 0.3);
+                        break;
+                    default:
+                        geometry = new THREE.SphereGeometry(size * 0.2, 8, 8);
+                }
+                
+                const material = particleType === 'points' 
+                    ? new THREE.PointsMaterial({ 
+                        size: size, 
+                        vertexColors: false,
+                        transparent: true,
+                        opacity: 0.9,
+                        blending: THREE.AdditiveBlending
+                    })
+                    : new THREE.MeshStandardMaterial({ 
+                        color: new THREE.Color().setHSL((baseHue + (i / actualCount) * hueRange) / 360, saturation, brightness),
+                        transparent: true,
+                        opacity: 0.85,
+                        emissive: new THREE.Color().setHSL((baseHue + (i / actualCount) * hueRange) / 360, saturation * 0.8, brightness * 0.3),
+                        emissiveIntensity: glowEffect ? 0.5 : 0
+                    });
+                
+                const mesh = particleType === 'points'
+                    ? new THREE.Points(geometry, material)
+                    : new THREE.Mesh(geometry, material);
+                
+                const pos = getPatternPosition(i, actualCount);
+                mesh.position.set(pos.x, pos.y, pos.z);
+                
+                const particle = {
+                    mesh: mesh,
+                    geometry: geometry,
+                    material: material,
+                    velocity: new THREE.Vector3(0, 0, 0),
+                    acceleration: new THREE.Vector3(0, 0, 0),
+                    mass: 1,
+                    trail: [],
+                    homePosition: new THREE.Vector3(pos.x, pos.y, pos.z), // Remember starting position
+                    attractionStrength: 0.02 // Strength of return to home
+                };
+                
+                particles.push(particle);
+                scene.add(mesh);
+            }
+            
+            document.getElementById('particleCount2000').textContent = actualCount;
+            updateCPULoad();
+        }
+
+        function createStarGeometry(size) {
+            const shape = new THREE.Shape();
+            const points = 5;
+            const outerRadius = size;
+            const innerRadius = size * 0.4;
+            
+            for (let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (i * Math.PI) / points;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                
+                if (i === 0) shape.moveTo(x, y);
+                else shape.lineTo(x, y);
+            }
+            shape.closePath();
+            
+            const geometry = new THREE.ShapeGeometry(shape);
+            return geometry;
+        }
+
+        function getPatternPosition(index, total) {
+            const i = index;
+            const n = total;
+            const t = i / n;
+            const phi = Math.PI * (3 - Math.sqrt(5));
+            
+            switch(visualPattern) {
+                case 'spiral-fibonacci':
+                    const r = 30 * Math.sqrt(i);
+                    const theta = i * phi;
+                    return {
+                        x: r * Math.cos(theta),
+                        y: r * Math.sin(theta),
+                        z: (i / n) * 20 - 10
+                    };
+                    
+                case 'spiral-archimedean':
+                    const angle = i * 0.5;
+                    const radius = angle * 2;
+                    return {
+                        x: radius * Math.cos(angle),
+                        y: radius * Math.sin(angle),
+                        z: Math.sin(i * 0.1) * 5
+                    };
+                    
+                case 'flower-rose':
+                    const k = 5;
+                    const a = i * Math.PI * 2 / n;
+                    const roseR = 20 * Math.cos(k * a);
+                    return {
+                        x: roseR * Math.cos(a),
+                        y: roseR * Math.sin(a),
+                        z: Math.cos(i * 0.1) * 3
+                    };
+                    
+                case 'flower-sunflower':
+                    const sr = Math.sqrt(i) * 3;
+                    const stheta = i * phi;
+                    return {
+                        x: sr * Math.cos(stheta),
+                        y: sr * Math.sin(stheta),
+                        z: 0
+                    };
+                    
+                case 'butterfly':
+                    const bt = t * Math.PI * 12;
+                    const bx = Math.sin(bt) * (Math.exp(Math.cos(bt)) - 2 * Math.cos(4 * bt) - Math.pow(Math.sin(bt / 12), 5));
+                    const by = Math.cos(bt) * (Math.exp(Math.cos(bt)) - 2 * Math.cos(4 * bt) - Math.pow(Math.sin(bt / 12), 5));
+                    return { x: bx * 5, y: by * 5, z: Math.sin(i * 0.05) * 2 };
+                    
+                case 'galaxy':
+                    const ga = (i / n) * Math.PI * 10;
+                    const gr = (i / n) * 40;
+                    return {
+                        x: gr * Math.cos(ga),
+                        y: (Math.random() - 0.5) * 5,
+                        z: gr * Math.sin(ga)
+                    };
+                    
+                case 'dna':
+                    const da = (i / n) * Math.PI * 20;
+                    const dr = 10;
+                    const strand = i % 2;
+                    return {
+                        x: dr * Math.cos(da + strand * Math.PI),
+                        y: (i / n) * 100 - 50,
+                        z: dr * Math.sin(da + strand * Math.PI)
+                    };
+                    
+                case 'torus-knot':
+                    const p = 3, q = 2;
+                    const tk = t * Math.PI * 2;
+                    const tkr = Math.cos(q * tk) + 2;
+                    return {
+                        x: tkr * Math.cos(p * tk) * 10,
+                        y: Math.sin(q * tk) * 10,
+                        z: tkr * Math.sin(p * tk) * 10
+                    };
+                    
+                case 'sphere-surface':
+                    const sphi = Math.acos(-1 + (2 * i) / n);
+                    const stheta2 = Math.sqrt(n * Math.PI) * sphi;
+                    const sradius = 30;
+                    return {
+                        x: sradius * Math.cos(stheta2) * Math.sin(sphi),
+                        y: sradius * Math.sin(stheta2) * Math.sin(sphi),
+                        z: sradius * Math.cos(sphi)
+                    };
+                    
+                case 'cube-lattice':
+                    const gridSize = Math.ceil(Math.pow(n, 1/3));
+                    const spacing = 5;
+                    const lx = (i % gridSize) * spacing - (gridSize * spacing) / 2;
+                    const ly = (Math.floor(i / gridSize) % gridSize) * spacing - (gridSize * spacing) / 2;
+                    const lz = (Math.floor(i / (gridSize * gridSize))) * spacing - (gridSize * spacing) / 2;
+                    return { x: lx, y: ly, z: lz };
+                    
+                case 'sierpinski':
+                    let sx = 0, sy = 0;
+                    let vertices = [[0, 0], [50, 0], [25, 43.3]];
+                    for (let j = 0; j < 8; j++) {
+                        const vertex = vertices[Math.floor(Math.random() * 3)];
+                        sx = (sx + vertex[0]) / 2;
+                        sy = (sy + vertex[1]) / 2;
+                    }
+                    return { x: sx - 25, y: sy - 21.65, z: Math.sin(i * 0.1) * 3 };
+                    
+                case 'mandelbrot':
+                    const mx = ((i % 100) / 100) * 3.5 - 2.5;
+                    const my = (Math.floor(i / 100) / (n / 100)) * 2 - 1;
+                    let mzx = 0, mzy = 0;
+                    let iter = 0;
+                    while (mzx * mzx + mzy * mzy < 4 && iter < 20) {
+                        const temp = mzx * mzx - mzy * mzy + mx;
+                        mzy = 2 * mzx * mzy + my;
+                        mzx = temp;
+                        iter++;
+                    }
+                    return { x: mx * 20, y: my * 20, z: iter - 10 };
+                    
+                default:
+                    return {
+                        x: (Math.random() - 0.5) * 60,
+                        y: (Math.random() - 0.5) * 60,
+                        z: (Math.random() - 0.5) * 60
+                    };
+            }
+        }
+
+        function initWaveform() {
+            const container = document.getElementById('waveformDisplay');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            for (let i = 0; i < 64; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'waveform-bar';
+                bar.style.left = (i * 1.5) + '%';
+                container.appendChild(bar);
+            }
+        }
+
+        function initSequenceGrid() {
+            updateSequenceGrid();
+        }
+
+        function updateSequenceGrid() {
+            const grid = document.getElementById('sequenceGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < patternLength; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'pattern-cell';
+                if (i === currentStep && isPlaying) {
+                    cell.classList.add('active');
+                }
+                cell.textContent = pattern[i] ? '1' : '0';
+                cell.onclick = () => togglePatternCell(i);
+                grid.appendChild(cell);
+            }
+            
+            document.getElementById('patternLength').textContent = patternLength;
+            document.getElementById('totalSteps').textContent = patternLength;
+        }
+
+        function togglePatternCell(index) {
+            pattern[index] = pattern[index] ? 0 : 1;
+            updateSequenceGrid();
+        }
+
+        function clearPattern() {
+            pattern = Array(patternLength).fill(0);
+            updateSequenceGrid();
+        }
+
+        function generateRandomPattern() {
+            for (let i = 0; i < patternLength; i++) {
+                pattern[i] = Math.random() > 0.5 ? 1 : 0;
+            }
+            updateSequenceGrid();
+        }
+
+        function reversePattern() {
+            pattern = pattern.slice(0, patternLength).reverse();
+            updateSequenceGrid();
+        }
+
+        function updatePatternLength() {
+            patternLength = parseInt(document.getElementById('patternLengthSlider').value);
+            while (pattern.length < patternLength) {
+                pattern.push(0);
+            }
+            updateSequenceGrid();
+        }
+
+        // ===== ANIMATION LOOP =====
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.016 * timeScale;
+            
+            const now = Date.now();
+            fpsCounter = Math.round(1000 / (now - lastFrameTime));
+            lastFrameTime = now;
+            document.getElementById('fpsCoun').textContent = fpsCounter;
+            
+            applyPhysics();
+            updateGradients();
+            updateWaveformDisplay();
+            
+            renderer.render(scene, camera);
+        }
+
+        function applyPhysics() {
+            const audioData = (isPlaying && analyser) ? analyser.getValue() : new Array(512).fill(0);
+            const audioAvg = audioData.reduce((a, b) => Math.abs(a) + Math.abs(b), 0) / audioData.length;
+            
+            particles.forEach((particle, i) => {
+                const pos = particle.mesh.position;
+                
+                switch(physicsModel) {
+                    case 'lorenz':
+                        const sigma = 10, rho = 28, beta = 8/3, dt = 0.005 * timeScale;
+                        const dx = sigma * (pos.y - pos.x) * dt;
+                        const dy = (pos.x * (rho - pos.z) - pos.y) * dt;
+                        const dz = (pos.x * pos.y - beta * pos.z) * dt;
+                        
+                        // Apply lorenz forces with moderation
+                        particle.velocity.x += dx * forceStrength * 0.5;
+                        particle.velocity.y += dy * forceStrength * 0.5;
+                        particle.velocity.z += dz * forceStrength * 0.5;
+                        
+                        // Audio reactivity adds energy without chaos
+                        particle.velocity.x += audioAvg * audioDisruption * Math.sin(time + i * 0.1) * 0.3;
+                        particle.velocity.y += audioAvg * audioDisruption * Math.cos(time + i * 0.1) * 0.3;
+                        particle.velocity.z += audioAvg * audioDisruption * Math.sin(time * 0.5 + i * 0.05) * 0.3;
+                        
+                        // Gentle return to home position to maintain pattern
+                        const homeVec = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength);
+                        particle.velocity.add(homeVec);
+                        
+                        // Apply velocity with strong damping
+                        particle.velocity.multiplyScalar(0.85);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'rossler':
+                        const a = 0.2, b = 0.2, c = 5.7, rdt = 0.02 * timeScale;
+                        const rdx = (-pos.y - pos.z) * rdt;
+                        const rdy = (pos.x + a * pos.y) * rdt;
+                        const rdz = (b + pos.z * (pos.x - c)) * rdt;
+                        
+                        particle.velocity.x += rdx * forceStrength * 0.3;
+                        particle.velocity.y += rdy * forceStrength * 0.3;
+                        particle.velocity.z += rdz * forceStrength * 0.3;
+                        
+                        // Maintain pattern structure
+                        const homeVec2 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 1.5);
+                        particle.velocity.add(homeVec2);
+                        
+                        particle.velocity.multiplyScalar(0.88);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'gravity':
+                        const centerMass = new THREE.Vector3(0, 0, 0);
+                        const distance = pos.distanceTo(centerMass);
+                        const force = (forceStrength * 50) / (distance * distance + 10);
+                        const direction = centerMass.clone().sub(pos).normalize();
+                        
+                        // Apply gravitational force
+                        particle.acceleration.copy(direction.multiplyScalar(force));
+                        particle.velocity.add(particle.acceleration);
+                        
+                        // Audio creates pulsing energy
+                        const audioPulse = audioAvg * audioDisruption * 2;
+                        particle.velocity.multiplyScalar(1 + audioPulse * 0.1);
+                        
+                        // Maintain orbital structure
+                        const toHome = particle.homePosition.clone().sub(pos);
+                        const homeDistance = toHome.length();
+                        if (homeDistance > 5) {
+                            particle.velocity.add(toHome.normalize().multiplyScalar(particle.attractionStrength * homeDistance * 0.1));
+                        }
+                        
+                        particle.velocity.multiplyScalar(damping);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'flocking':
+                        let alignment = new THREE.Vector3();
+                        let cohesion = new THREE.Vector3();
+                        let separation = new THREE.Vector3();
+                        let neighbors = 0;
+                        const perceptionRadius = 20;
+                        const separationRadius = 8;
+                        
+                        // Sample nearby particles for performance
+                        const sampleSize = Math.min(50, particles.length);
+                        const step = Math.max(1, Math.floor(particles.length / sampleSize));
+                        
+                        for (let j = 0; j < particles.length; j += step) {
+                            if (i !== j) {
+                                const other = particles[j];
+                                const dist = pos.distanceTo(other.mesh.position);
+                                
+                                if (dist < perceptionRadius && dist > 0.1) {
+                                    // Alignment - match velocity
+                                    alignment.add(other.velocity);
+                                    
+                                    // Cohesion - move toward center of mass
+                                    cohesion.add(other.mesh.position);
+                                    
+                                    // Separation - avoid crowding
+                                    if (dist < separationRadius) {
+                                        const diff = pos.clone().sub(other.mesh.position);
+                                        diff.normalize().divideScalar(dist); // Stronger when closer
+                                        separation.add(diff);
+                                    }
+                                    neighbors++;
+                                }
+                            }
+                        }
+                        
+                        if (neighbors > 0) {
+                            // Alignment
+                            alignment.divideScalar(neighbors);
+                            alignment.sub(particle.velocity);
+                            alignment.multiplyScalar(0.08 * forceStrength);
+                            
+                            // Cohesion
+                            cohesion.divideScalar(neighbors);
+                            cohesion.sub(pos);
+                            cohesion.normalize().multiplyScalar(0.05 * forceStrength);
+                            
+                            // Separation (strongest force)
+                            separation.normalize().multiplyScalar(0.15 * forceStrength);
+                            
+                            particle.velocity.add(alignment);
+                            particle.velocity.add(cohesion);
+                            particle.velocity.add(separation);
+                        }
+                        
+                        // Audio creates synchronized pulsing
+                        particle.velocity.multiplyScalar(1 + audioAvg * audioDisruption * 0.5);
+                        
+                        // Gentle attraction to home maintains pattern
+                        const homeVec3 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 0.5);
+                        particle.velocity.add(homeVec3);
+                        
+                        // Limit max speed for smooth movement
+                        const maxSpeed = 2 * forceStrength;
+                        if (particle.velocity.length() > maxSpeed) {
+                            particle.velocity.normalize().multiplyScalar(maxSpeed);
+                        }
+                        
+                        particle.velocity.multiplyScalar(damping);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'wave':
+                        const waveSpeed = 0.15 * timeScale;
+                        const baseWave = Math.sin(pos.x * 0.08 + time * waveSpeed) * 
+                                        Math.cos(pos.z * 0.08 + time * waveSpeed);
+                        const waveHeight = baseWave * 8 * forceStrength;
+                        
+                        // Smooth wave following with audio influence
+                        const targetY = particle.homePosition.y + waveHeight + audioAvg * audioDisruption * 3;
+                        particle.velocity.y += (targetY - pos.y) * 0.15;
+                        
+                        // Add gentle XZ drift based on wave gradient
+                        const gradientX = Math.cos(pos.x * 0.08 + time * waveSpeed) * 0.05;
+                        const gradientZ = -Math.sin(pos.z * 0.08 + time * waveSpeed) * 0.05;
+                        particle.velocity.x += gradientX * forceStrength;
+                        particle.velocity.z += gradientZ * forceStrength;
+                        
+                        // Return to home XZ position
+                        particle.velocity.x += (particle.homePosition.x - pos.x) * 0.02;
+                        particle.velocity.z += (particle.homePosition.z - pos.z) * 0.02;
+                        
+                        particle.velocity.multiplyScalar(0.92);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'vortex':
+                        const vortexCenter = new THREE.Vector3(0, 0, 0);
+                        const toCenter = vortexCenter.clone().sub(pos);
+                        const vdist = toCenter.length();
+                        
+                        // Create beautiful spiral motion
+                        const tangent = new THREE.Vector3(-toCenter.z, toCenter.y * 0.3, toCenter.x).normalize();
+                        
+                        // Radial force - gentle pull toward center
+                        const radialStrength = 0.02 * forceStrength * (vdist / 50);
+                        const radialForce = toCenter.clone().normalize().multiplyScalar(radialStrength);
+                        
+                        // Tangential force - creates rotation
+                        const tangentialStrength = 3 * forceStrength / (vdist * 0.1 + 1);
+                        const tangentialForce = tangent.multiplyScalar(tangentialStrength);
+                        
+                        // Vertical component for helix effect
+                        const verticalForce = new THREE.Vector3(0, Math.sin(time * 0.5 + i * 0.1) * 0.5 * forceStrength, 0);
+                        
+                        particle.velocity.add(radialForce);
+                        particle.velocity.add(tangentialForce);
+                        particle.velocity.add(verticalForce);
+                        
+                        // Audio creates pulsing expansion/contraction
+                        particle.velocity.multiplyScalar(1 + audioAvg * audioDisruption * 0.3);
+                        
+                        // Maintain distance from home
+                        const homeVec4 = particle.homePosition.clone().sub(pos);
+                        const homeDist = homeVec4.length();
+                        if (homeDist > 15) {
+                            particle.velocity.add(homeVec4.normalize().multiplyScalar(particle.attractionStrength * homeDist * 0.05));
+                        }
+                        
+                        particle.velocity.multiplyScalar(damping * 0.95);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'magnetic':
+                        // Create complex magnetic field
+                        const fieldX = Math.sin(pos.y * 0.05 + time * 0.1) * Math.cos(pos.z * 0.05);
+                        const fieldY = Math.sin(pos.x * 0.05) * Math.cos(pos.z * 0.05 + time * 0.1);
+                        const fieldZ = Math.cos(pos.x * 0.05 + time * 0.1) * Math.sin(pos.y * 0.05);
+                        
+                        particle.velocity.x += fieldX * forceStrength * 0.2;
+                        particle.velocity.y += fieldY * forceStrength * 0.2;
+                        particle.velocity.z += fieldZ * forceStrength * 0.2;
+                        
+                        // Audio modulates field strength
+                        particle.velocity.multiplyScalar(1 + audioAvg * audioDisruption * 0.4);
+                        
+                        // Return to pattern
+                        const homeVec5 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 2);
+                        particle.velocity.add(homeVec5);
+                        
+                        particle.velocity.multiplyScalar(damping);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'quantum':
+                        // Quantum tunneling with controlled probability
+                        if (Math.random() < 0.005 * forceStrength) {
+                            // Teleport to nearby location, maintaining overall structure
+                            const jumpRadius = 8 + audioAvg * audioDisruption * 5;
+                            pos.x += (Math.random() - 0.5) * jumpRadius;
+                            pos.y += (Math.random() - 0.5) * jumpRadius;
+                            pos.z += (Math.random() - 0.5) * jumpRadius;
+                        }
+                        
+                        // Wave function collapse - gentle drift
+                        particle.velocity.x += (Math.random() - 0.5) * 0.1 * forceStrength;
+                        particle.velocity.y += (Math.random() - 0.5) * 0.1 * forceStrength;
+                        particle.velocity.z += (Math.random() - 0.5) * 0.1 * forceStrength;
+                        
+                        // Strong return to home position
+                        const homeVec6 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 3);
+                        particle.velocity.add(homeVec6);
+                        
+                        particle.velocity.multiplyScalar(0.9);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'fractal':
+                        // Mandelbrot-inspired iteration
+                        const fscale = 0.999 + audioAvg * audioDisruption * 0.002;
+                        const angle = Math.atan2(pos.z, pos.x) + 0.01 * forceStrength;
+                        const radius = Math.sqrt(pos.x * pos.x + pos.z * pos.z) * fscale;
+                        
+                        // Spiral inward/outward with rotation
+                        const targetX = radius * Math.cos(angle);
+                        const targetZ = radius * Math.sin(angle);
+                        
+                        particle.velocity.x += (targetX - pos.x) * 0.05;
+                        particle.velocity.z += (targetZ - pos.z) * 0.05;
+                        
+                        // Vertical oscillation
+                        particle.velocity.y += Math.sin(time * 0.3 + i * 0.1) * 0.05 * forceStrength;
+                        
+                        // Return toward home
+                        const homeVec7 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 1.5);
+                        particle.velocity.add(homeVec7);
+                        
+                        particle.velocity.multiplyScalar(0.93);
+                        pos.add(particle.velocity);
+                        break;
+                        
+                    case 'brownian':
+                        // Random walk with memory
+                        particle.velocity.x += (Math.random() - 0.5) * 0.3 * forceStrength;
+                        particle.velocity.y += (Math.random() - 0.5) * 0.3 * forceStrength;
+                        particle.velocity.z += (Math.random() - 0.5) * 0.3 * forceStrength;
+                        
+                        // Audio increases randomness
+                        const audioNoise = audioAvg * audioDisruption;
+                        particle.velocity.multiplyScalar(1 + audioNoise * 0.5);
+                        
+                        // Return to home position
+                        const homeVec8 = particle.homePosition.clone().sub(pos).multiplyScalar(particle.attractionStrength * 2);
+                        particle.velocity.add(homeVec8);
+                        
+                        particle.velocity.multiplyScalar(0.85);
+                        pos.add(particle.velocity);
+                        break;
+                }
+                
+                // Add rotation to particles for visual interest
+                if (particleType !== 'points' && particle.mesh.rotation) {
+                    const rotSpeed = particle.velocity.length() * 0.1;
+                    particle.mesh.rotation.x += rotSpeed * rotationSpeed * 0.1;
+                    particle.mesh.rotation.y += rotSpeed * rotationSpeed * 0.15;
+                    particle.mesh.rotation.z += rotSpeed * rotationSpeed * 0.08;
+                    
+                    // Audio influences rotation
+                    particle.mesh.rotation.y += audioAvg * audioDisruption * 0.2;
+                }
+                
+                // Boundary handling
+                const maxDist = 100;
+                if (boundaryWrap) {
+                    if (pos.x > maxDist) pos.x = -maxDist;
+                    if (pos.x < -maxDist) pos.x = maxDist;
+                    if (pos.y > maxDist) pos.y = -maxDist;
+                    if (pos.y < -maxDist) pos.y = maxDist;
+                    if (pos.z > maxDist) pos.z = -maxDist;
+                    if (pos.z < -maxDist) pos.z = maxDist;
+                } else {
+                    if (pos.length() > maxDist) {
+                        pos.normalize().multiplyScalar(maxDist);
+                        particle.velocity.multiplyScalar(0.5);
+                    }
+                }
+            });
+            
+            // Smooth camera orbit with audio influence
+            const baseOrbitSpeed = 0.05 * rotationSpeed;
+            const audioOrbitBoost = audioAvg * audioDisruption * 0.02;
+            const orbitSpeed = baseOrbitSpeed + audioOrbitBoost;
+            
+            camera.position.x = Math.cos(time * orbitSpeed) * cameraDistance;
+            camera.position.z = Math.sin(time * orbitSpeed) * cameraDistance;
+            camera.position.y = Math.sin(time * orbitSpeed * 0.3) * (cameraDistance * 0.2);
+            camera.lookAt(0, 0, 0);
+        }
+
+        function updateGradients() {
+            if (gradientMode === 'solid') return;
+            
+            const audioData = (isPlaying && analyser) ? analyser.getValue() : new Array(512).fill(0);
+            
+            particles.forEach((particle, i) => {
+                let hue = baseHue;
+                
+                switch(gradientMode) {
+                    case 'radial':
+                        const dist = particle.mesh.position.length();
+                        hue = baseHue + (dist / 50) * hueRange;
+                        break;
+                    case 'frequency':
+                        const freqIndex = Math.floor((i / particles.length) * audioData.length);
+                        const freqVal = Math.abs(audioData[freqIndex] || 0);
+                        hue = baseHue + freqVal * hueRange * 10;
+                        break;
+                    case 'velocity':
+                        const speed = particle.velocity.length();
+                        hue = baseHue + speed * hueRange;
+                        break;
+                    case 'time':
+                        hue = baseHue + ((time + i * 0.1) % 1) * hueRange;
+                        break;
+                    case 'depth':
+                        hue = baseHue + ((particle.mesh.position.z + 50) / 100) * hueRange;
+                        break;
+                    case 'rainbow':
+                        hue = (time * 50 + i * 0.5) % 360;
+                        break;
+                    case 'temperature':
+                        const temp = particle.velocity.length();
+                        hue = 240 - temp * 60;
+                        break;
+                }
+                
+                particle.material.color.setHSL((hue % 360) / 360, saturation, brightness);
+                
+                // Update emissive glow
+                if (particle.material.emissive && glowEffect) {
+                    particle.material.emissive.setHSL((hue % 360) / 360, saturation * 0.8, brightness * 0.3);
+                    particle.material.emissiveIntensity = 0.5 + (audioData.reduce((a, b) => Math.abs(a) + Math.abs(b), 0) / audioData.length) * 0.5;
+                }
+            });
+        }
+
+        function updateWaveformDisplay() {
+            const bars = document.querySelectorAll('.waveform-bar');
+            if (!bars.length || !isPlaying || !analyser) return;
+            
+            const waveform = analyser.getValue();
+            const step = Math.floor(waveform.length / bars.length);
+            
+            bars.forEach((bar, i) => {
+                const value = Math.abs(waveform[i * step] || 0);
+                bar.style.height = (value * 100) + '%';
+            });
+        }
+
+        function updateCPULoad() {
+            const load = Math.min(99, Math.round((particleCount / 15000) * 100));
+            document.getElementById('cpuLoad').textContent = load + '%';
+        }
+
+        // ===== PLAYBACK CONTROL =====
+        async function togglePlayback() {
+            if (!isPlaying) {
+                await startPlayback();
+            } else {
+                pausePlayback();
+            }
+        }
+
+        async function startPlayback() {
+            await ensureAudioStarted();
+            isPlaying = true;
+            document.getElementById('playButton').textContent = '⏸ PAUSE';
+            
+            Tone.Transport.bpm.value = tempo;
+            Tone.Transport.scheduleRepeat(playStep, '16n');
+            Tone.Transport.start();
+            
+            document.getElementById('audioQuality').textContent = 'HIGH';
+            console.log('▶ Playback started');
+        }
+
+        function pausePlayback() {
+            isPlaying = false;
+            document.getElementById('playButton').textContent = '▶ START';
+            Tone.Transport.pause();
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            currentStep = 0;
+            document.getElementById('playButton').textContent = '▶ START';
+            Tone.Transport.stop();
+            Tone.Transport.cancel(0);
+            if (synth) synth.releaseAll();
+            document.getElementById('audioQuality').textContent = 'IDLE';
+            updateSequenceGrid();
+        }
+
+        function playStep(time) {
+            if (!isPlaying || !pattern[currentStep]) {
+                currentStep = (currentStep + 1) % patternLength;
+                requestAnimationFrame(updateSequenceGrid);
+                return;
+            }
+            
+            switch(patternMode) {
+                case 'melody':
+                    playMelodyNote(time);
+                    break;
+                case 'harmony':
+                    playChord(time);
+                    break;
+                case 'filter':
+                    modulateFilter(time);
+                    break;
+                case 'visual':
+                    morphVisuals();
+                    break;
+                case 'physics':
+                    applyPhysicsForce();
+                    break;
+                case 'color':
+                    shiftColors();
+                    break;
+            }
+            
+            currentStep = (currentStep + 1) % patternLength;
+            requestAnimationFrame(updateSequenceGrid);
+        }
+
+        function playMelodyNote(time) {
+            const noteIndex = Math.floor(Math.random() * scale.length);
+            const semitone = scale[noteIndex];
+            const freq = Tone.Frequency(rootNote + octave).transpose(semitone);
+            
+            const velocityVariation = (Math.random() - 0.5) * (humanization / 100);
+            const timingVariation = (Math.random() - 0.5) * 0.01 * (humanization / 100);
+            
+            synth.triggerAttackRelease(freq, '8n', time + timingVariation, 0.5 + velocityVariation);
+        }
+
+        function playChord(time) {
+            const root = Tone.Frequency(rootNote + octave);
+            const intervals = [0, 4, 7];
+            const notes = intervals.map(i => root.transpose(i));
+            synth.triggerAttackRelease(notes, '4n', time);
+        }
+
+        function modulateFilter(time) {
+            const freq = 500 + Math.random() * 3000;
+            filter.frequency.setValueAtTime(freq, time);
+            playMelodyNote(time);
+        }
+
+        function morphVisuals() {
+            baseHue = (baseHue + 30) % 360;
+            document.getElementById('baseHue').value = baseHue;
+            updateBaseHue();
+        }
+
+        function applyPhysicsForce() {
+            particles.forEach(p => {
+                p.velocity.multiplyScalar(1.1);
+            });
+        }
+
+        function shiftColors() {
+            baseHue = (baseHue + 45) % 360;
+            updateBaseHue();
+        }
+
+        // ===== PIANO KEYBOARD =====
+        function initPiano() {
+            const keyboard = document.getElementById('pianoKeyboard');
+            const octaves = 2;
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            let whiteKeyIndex = 0;
+            
+            for (let oct = 4; oct < 4 + octaves; oct++) {
+                for (let i = 0; i < notes.length; i++) {
+                    const note = notes[i];
+                    const fullNote = note + oct;
+                    const isBlack = note.includes('#');
+                    
+                    const key = document.createElement('div');
+                    key.className = 'piano-key ' + (isBlack ? 'black' : 'white');
+                    key.dataset.note = fullNote;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'key-label';
+                    label.textContent = note;
+                    key.appendChild(label);
+                    
+                    if (isBlack) {
+                        key.style.left = (whiteKeyIndex * 61 - 20) + 'px';
+                    } else {
+                        whiteKeyIndex++;
+                    }
+                    
+                    key.addEventListener('mousedown', () => playPianoKey(fullNote, key));
+                    key.addEventListener('mouseup', () => stopPianoKey(key));
+                    key.addEventListener('mouseleave', () => stopPianoKey(key));
+                    
+                    keyboard.appendChild(key);
+                }
+            }
+        }
+
+        async function playPianoKey(note, keyElement) {
+            await ensureAudioStarted();
+            keyElement.classList.add('playing');
+            synth.triggerAttack(note);
+        }
+
+        function stopPianoKey(keyElement) {
+            keyElement.classList.remove('playing');
+            if (synth) synth.triggerRelease();
+        }
+
+        function togglePiano() {
+            document.getElementById('pianoOverlay').classList.toggle('open');
+        }
+
+        function minimizePiano() {
+            const overlay = document.getElementById('pianoOverlay');
+            overlay.classList.remove('open');
+            overlay.classList.add('minimized');
+        }
+
+        function closePiano() {
+            const overlay = document.getElementById('pianoOverlay');
+            overlay.classList.remove('open', 'minimized');
+        }
+
+        // ===== RECORDING =====
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            await ensureAudioStarted();
+            recordedChunks = [];
+            const canvas = document.getElementById('visualizer');
+            const stream = canvas.captureStream(30);
+            
+            try {
+                const dest = Tone.getContext().createMediaStreamDestination();
+                analyser.connect(dest);
+                if (dest.stream.getAudioTracks().length > 0) {
+                    stream.addTrack(dest.stream.getAudioTracks()[0]);
+                }
+            } catch (e) {
+                console.warn('Could not add audio:', e);
+            }
+            
+            try {
+                mediaRecorder = new MediaRecorder(stream, { 
+                    mimeType: 'video/webm;codecs=vp9,opus',
+                    videoBitsPerSecond: 5000000
+                });
+            } catch (e) {
+                mediaRecorder = new MediaRecorder(stream);
+            }
+            
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
+            mediaRecorder.start(100);
+            isRecording = true;
+            
+            document.getElementById('recordButton').textContent = '■ STOP REC';
+            document.getElementById('recordingIndicator').classList.add('active');
+            document.getElementById('recordStatus').classList.remove('inactive');
+            document.getElementById('recordStatus').classList.add('active');
+            
+            if (!isPlaying) await startPlayback();
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                document.getElementById('recordButton').textContent = '⚫ RECORD';
+                document.getElementById('recordingIndicator').classList.remove('active');
+                document.getElementById('recordStatus').classList.add('inactive');
+                document.getElementById('recordStatus').classList.remove('active');
+                
+                setTimeout(() => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `quantum-canvas-${Date.now()}.webm`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 1000);
+            }
+        }
+
+        // ===== UPDATE FUNCTIONS =====
+        function updatePatternMode() {
+            patternMode = document.getElementById('patternMode').value;
+        }
+        
+        function updateScale() {
+            const scaleType = document.getElementById('scaleSelect').value;
+            scale = scales[scaleType];
+        }
+        
+        function updateRoot() {
+            rootNote = document.getElementById('rootNote').value;
+            document.getElementById('rootValue').textContent = rootNote;
+        }
+        
+        function updateTempo() {
+            tempo = parseInt(document.getElementById('tempo').value);
+            document.getElementById('tempoValue').textContent = tempo;
+            if (isPlaying) Tone.Transport.bpm.value = tempo;
+        }
+        
+        function updateOctave() {
+            octave = parseInt(document.getElementById('octave').value);
+            document.getElementById('octaveValue').textContent = octave;
+        }
+        
+        function updateHumanization() {
+            humanization = parseInt(document.getElementById('humanization').value);
+            document.getElementById('humanizationValue').textContent = humanization;
+        }
+        
+        function updatePhysicsModel() {
+            physicsModel = document.getElementById('physicsModel').value;
+        }
+        
+        function updateForce() {
+            forceStrength = parseFloat(document.getElementById('forceStrength').value);
+            document.getElementById('forceValue').textContent = forceStrength.toFixed(1);
+        }
+        
+        function updateDamping() {
+            damping = parseFloat(document.getElementById('damping').value);
+            document.getElementById('dampingValue').textContent = damping.toFixed(2);
+        }
+        
+        function updateAudioDisruption() {
+            audioDisruption = parseFloat(document.getElementById('audioDisrupt').value);
+            document.getElementById('audioDisruptValue').textContent = audioDisruption.toFixed(1);
+        }
+        
+        function updateTimeScale() {
+            timeScale = parseFloat(document.getElementById('timeScale').value);
+            document.getElementById('timeScaleValue').textContent = timeScale.toFixed(1);
+        }
+        
+        function updateBoundary() {
+            boundaryWrap = document.getElementById('boundaryWrap').checked;
+        }
+        
+        function updateParticleType() {
+            particleType = document.getElementById('particleType').value;
+            createParticles();
+        }
+        
+        function updateVisualPattern() {
+            visualPattern = document.getElementById('visualPattern').value;
+            createParticles();
+        }
+        
+        function updateParticleCount() {
+            particleCount = parseInt(document.getElementById('particleCount').value);
+            document.getElementById('particleCountValue').textContent = particleCount;
+            createParticles();
+        }
+        
+        function updateParticleSize() {
+            particleSize = parseFloat(document.getElementById('particleSize').value);
+            document.getElementById('particleSizeValue').textContent = particleSize.toFixed(1);
+            createParticles();
+        }
+        
+        function updateSizeVariation() {
+            sizeVariation = parseInt(document.getElementById('sizeVariation').value);
+            document.getElementById('sizeVariationValue').textContent = sizeVariation;
+            createParticles();
+        }
+        
+        function updateTrails() {
+            trailEffect = document.getElementById('trailEffect').checked;
+        }
+        
+        function updateGradientMode() {
+            gradientMode = document.getElementById('gradientMode').value;
+        }
+        
+        function updateBaseHue() {
+            baseHue = parseInt(document.getElementById('baseHue').value);
+            document.getElementById('baseHueValue').textContent = baseHue;
+        }
+        
+        function updateHueRange() {
+            hueRange = parseInt(document.getElementById('hueRange').value);
+            document.getElementById('hueRangeValue').textContent = hueRange;
+        }
+        
+        function updateSaturation() {
+            saturation = parseFloat(document.getElementById('saturation').value);
+            document.getElementById('saturationValue').textContent = saturation.toFixed(2);
+        }
+        
+        function updateBrightness() {
+            brightness = parseFloat(document.getElementById('brightness').value);
+            document.getElementById('brightnessValue').textContent = brightness.toFixed(2);
+        }
+        
+        function updateCameraDistance() {
+            cameraDistance = parseFloat(document.getElementById('cameraDist').value);
+            document.getElementById('cameraDistValue').textContent = Math.round(cameraDistance);
+            camera.position.z = cameraDistance;
+        }
+        
+        function updateRotationSpeed() {
+            rotationSpeed = parseFloat(document.getElementById('rotationSpeed').value);
+            document.getElementById('rotationSpeedValue').textContent = rotationSpeed.toFixed(1);
+        }
+        
+        function updateFOV() {
+            fieldOfView = parseFloat(document.getElementById('fov').value);
+            document.getElementById('fovValue').textContent = Math.round(fieldOfView);
+            camera.fov = fieldOfView;
+            camera.updateProjectionMatrix();
+        }
+        
+        function updateGlow() {
+            glowEffect = document.getElementById('glowEffect').checked;
+        }
+        
+        function updateWaveform() {
+            const type = document.getElementById('waveform').value;
+            if (synth) synth.set({ oscillator: { type } });
+        }
+        
+        function updatePolyphony() {
+            const poly = parseInt(document.getElementById('polyphony').value);
+            document.getElementById('polyphonyValue').textContent = poly;
+        }
+        
+        function updateEnvelope() {
+            const attack = parseFloat(document.getElementById('attack').value);
+            const decay = parseFloat(document.getElementById('decay').value);
+            const sustain = parseFloat(document.getElementById('sustain').value);
+            const release = parseFloat(document.getElementById('release').value);
+            document.getElementById('attackValue').textContent = attack.toFixed(3);
+            document.getElementById('decayValue').textContent = decay.toFixed(3);
+            document.getElementById('sustainValue').textContent = sustain.toFixed(2);
+            document.getElementById('releaseValue').textContent = release.toFixed(3);
+            if (synth) synth.set({ envelope: { attack, decay, sustain, release } });
+        }
+        
+        function updateVolume() {
+            const vol = parseFloat(document.getElementById('volume').value);
+            document.getElementById('volumeValue').textContent = vol;
+            if (synth) synth.volume.value = vol;
+        }
+        
+        function updateFilterType() {
+            const type = document.getElementById('filterType').value;
+            if (filter) filter.type = type;
+        }
+        
+        function updateFilter() {
+            const freq = parseFloat(document.getElementById('filterCutoff').value);
+            document.getElementById('filterValue').textContent = Math.round(freq);
+            if (filter) filter.frequency.value = freq;
+        }
+        
+        function updateResonance() {
+            const res = parseFloat(document.getElementById('resonance').value);
+            document.getElementById('resonanceValue').textContent = res.toFixed(1);
+            if (filter) filter.Q.value = res;
+        }
+        
+        function updateReverb() {
+            const wet = parseFloat(document.getElementById('reverb').value);
+            document.getElementById('reverbValue').textContent = wet.toFixed(2);
+            if (reverb) reverb.wet.value = wet;
+        }
+        
+        function updateReverbDecay() {
+            const decay = parseFloat(document.getElementById('reverbDecay').value);
+            document.getElementById('reverbDecayValue').textContent = decay.toFixed(1);
+            if (reverb) reverb.decay = decay;
+        }
+        
+        function updateDelay() {
+            const time = parseFloat(document.getElementById('delayTime').value);
+            document.getElementById('delayTimeValue').textContent = time.toFixed(2);
+            if (delay) delay.delayTime.value = time;
+        }
+        
+        function updateDelayFeedback() {
+            const feedback = parseFloat(document.getElementById('delayFeedback').value);
+            document.getElementById('delayFeedbackValue').textContent = feedback.toFixed(2);
+            if (delay) delay.feedback.value = feedback;
+        }
+        
+        function updateDistortion() {
+            const amount = parseFloat(document.getElementById('distortion').value);
+            document.getElementById('distortionValue').textContent = amount.toFixed(2);
+            if (distortion) {
+                distortion.distortion = amount;
+                distortion.wet.value = amount;
+            }
+        }
+        
+        function updateChorus() {
+            const depth = parseFloat(document.getElementById('chorus').value);
+            document.getElementById('chorusValue').textContent = depth.toFixed(2);
+            if (chorus) {
+                chorus.depth = depth;
+                chorus.wet.value = depth;
+            }
+        }
+        
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        function loadPreset(type) {
+            const presets = {
+                ambient: {
+                    tempo: 70,
+                    scale: 'pentatonic',
+                    baseHue: 220,
+                    particleCount: 3000,
+                    visualPattern: 'galaxy',
+                    physicsModel: 'wave',
+                    particleType: 'spheres',
+                    damping: 0.92,
+                    forceStrength: 0.8
+                },
+                fractal: {
+                    tempo: 100,
+                    scale: 'japanese',
+                    baseHue: 280,
+                    particleCount: 4000,
+                    visualPattern: 'mandelbrot',
+                    physicsModel: 'fractal',
+                    particleType: 'points',
+                    damping: 0.93,
+                    forceStrength: 1.2
+                },
+                quantum: {
+                    tempo: 140,
+                    scale: 'wholeTone',
+                    baseHue: 180,
+                    particleCount: 3500,
+                    visualPattern: 'sphere-surface',
+                    physicsModel: 'quantum',
+                    particleType: 'icosahedrons',
+                    damping: 0.90,
+                    forceStrength: 1.0
+                },
+                cosmic: {
+                    tempo: 90,
+                    scale: 'lydian',
+                    baseHue: 260,
+                    particleCount: 5000,
+                    visualPattern: 'spiral-fibonacci',
+                    physicsModel: 'gravity',
+                    particleType: 'stars',
+                    damping: 0.94,
+                    forceStrength: 1.3
+                },
+                techno: {
+                    tempo: 138,
+                    scale: 'minor',
+                    baseHue: 0,
+                    particleCount: 6000,
+                    visualPattern: 'cube-lattice',
+                    physicsModel: 'vortex',
+                    particleType: 'cubes',
+                    damping: 0.95,
+                    forceStrength: 1.5
+                },
+                organic: {
+                    tempo: 110,
+                    scale: 'dorian',
+                    baseHue: 120,
+                    particleCount: 4000,
+                    visualPattern: 'dna',
+                    physicsModel: 'flocking',
+                    particleType: 'tetrahedrons',
+                    damping: 0.91,
+                    forceStrength: 1.1
+                }
+            };
+            
+            const preset = presets[type];
+            if (!preset) return;
+            
+            document.getElementById('tempo').value = preset.tempo;
+            updateTempo();
+            document.getElementById('scaleSelect').value = preset.scale;
+            updateScale();
+            document.getElementById('baseHue').value = preset.baseHue;
+            updateBaseHue();
+            document.getElementById('particleCount').value = preset.particleCount;
+            updateParticleCount();
+            document.getElementById('visualPattern').value = preset.visualPattern;
+            document.getElementById('physicsModel').value = preset.physicsModel;
+            updatePhysicsModel();
+            document.getElementById('particleType').value = preset.particleType;
+            updateVisualPattern();
+            
+            // Apply optimized physics parameters
+            if (preset.damping) {
+                damping = preset.damping;
+            }
+            if (preset.forceStrength) {
+                forceStrength = preset.forceStrength;
+            }
+            
+            console.log('✓ Preset loaded:', type);
+        }
+
+        // ===== EVOLUTIONARY ALGORITHM ENGINE =====
+        
+        // Individual class for evolution
+        class Individual {
+            constructor(genes) {
+                this.genes = genes || this.randomGenes();
+                this.fitness = 0;
+            }
+            
+            randomGenes() {
+                const genes = {};
+                if (evolutionMode === 'particles') {
+                    genes.forceStrength = Math.random() * 3;
+                    genes.damping = 0.8 + Math.random() * 0.2;
+                    genes.timeScale = 0.5 + Math.random() * 2;
+                    genes.sizeVariation = Math.random();
+                } else if (evolutionMode === 'colors') {
+                    genes.baseHue = Math.random() * 360;
+                    genes.hueRange = Math.random() * 180;
+                    genes.saturation = Math.random();
+                    genes.brightness = Math.random();
+                } else if (evolutionMode === 'patterns') {
+                    genes.pattern = Array(16).fill(0).map(() => Math.random() > 0.5 ? 1 : 0);
+                    genes.tempo = 60 + Math.random() * 140;
+                } else if (evolutionMode === 'physics') {
+                    genes.damping = 0.8 + Math.random() * 0.2;
+                    genes.forceStrength = Math.random() * 3;
+                    genes.rotationSpeed = Math.random() * 3;
+                }
+                return genes;
+            }
+            
+            mutate() {
+                const mutated = { ...this.genes };
+                for (let key in mutated) {
+                    if (Math.random() < mutationRate) {
+                        if (key === 'pattern') {
+                            const idx = Math.floor(Math.random() * mutated[key].length);
+                            mutated[key][idx] = mutated[key][idx] ? 0 : 1;
+                        } else {
+                            const delta = (Math.random() - 0.5) * 0.3;
+                            mutated[key] = Math.max(0, mutated[key] * (1 + delta));
+                        }
+                    }
+                }
+                return new Individual(mutated);
+            }
+            
+            crossover(other) {
+                const childGenes = {};
+                for (let key in this.genes) {
+                    if (key === 'pattern') {
+                        childGenes[key] = this.genes[key].map((val, i) => 
+                            Math.random() > 0.5 ? val : other.genes[key][i]
+                        );
+                    } else {
+                        childGenes[key] = Math.random() > 0.5 ? this.genes[key] : other.genes[key];
+                    }
+                }
+                return new Individual(childGenes);
+            }
+        }
+        
+        // Apply individual's genes to the system
+        function applyIndividual(individual) {
+            if (evolutionMode === 'particles') {
+                forceStrength = individual.genes.forceStrength;
+                damping = individual.genes.damping;
+                timeScale = individual.genes.timeScale;
+                sizeVariation = individual.genes.sizeVariation;
+            } else if (evolutionMode === 'colors') {
+                baseHue = individual.genes.baseHue;
+                hueRange = individual.genes.hueRange;
+                saturation = individual.genes.saturation;
+                brightness = individual.genes.brightness;
+            } else if (evolutionMode === 'patterns') {
+                pattern = [...individual.genes.pattern];
+                tempo = individual.genes.tempo;
+                updateSequenceGrid();
+            } else if (evolutionMode === 'physics') {
+                damping = individual.genes.damping;
+                forceStrength = individual.genes.forceStrength;
+                rotationSpeed = individual.genes.rotationSpeed;
+            }
+        }
+        
+        // Calculate fitness based on evolution mode
+        function calculateFitness(individual) {
+            let fitness = 0;
+            
+            if (evolutionMode === 'particles') {
+                // Favor moderate damping and force for stable yet dynamic movement
+                const dampingFit = 1 - Math.abs(individual.genes.damping - 0.92);
+                const forceFit = 1 - Math.abs(individual.genes.forceStrength - 1.5) / 3;
+                const timeFit = 1 - Math.abs(individual.genes.timeScale - 1.0) / 2;
+                fitness = (dampingFit + forceFit + timeFit) / 3;
+                
+            } else if (evolutionMode === 'colors') {
+                // Favor aesthetically pleasing color combinations
+                const hueFit = Math.sin(individual.genes.baseHue * Math.PI / 180) * 0.5 + 0.5;
+                const satFit = individual.genes.saturation;
+                const brightFit = 1 - Math.abs(individual.genes.brightness - 0.5) * 2;
+                fitness = (hueFit + satFit + brightFit) / 3;
+                
+            } else if (evolutionMode === 'patterns') {
+                // Favor patterns with musical interest (not too sparse or dense)
+                const activeSteps = individual.genes.pattern.reduce((a, b) => a + b, 0);
+                const density = activeSteps / 16;
+                const densityFit = 1 - Math.abs(density - 0.5) * 2;
+                const tempoFit = 1 - Math.abs(individual.genes.tempo - 120) / 140;
+                fitness = (densityFit + tempoFit) / 2;
+                
+            } else if (evolutionMode === 'physics') {
+                // Favor balanced physics parameters
+                const dampingFit = individual.genes.damping;
+                const forceFit = 1 - Math.abs(individual.genes.forceStrength - 1.5) / 3;
+                const rotFit = 1 - Math.abs(individual.genes.rotationSpeed - 1.0) / 3;
+                fitness = (dampingFit + forceFit + rotFit) / 3;
+            }
+            
+            // Add particle system performance as fitness component
+            const particleFit = Math.min(particles.length / 3000, 1);
+            fitness = fitness * 0.8 + particleFit * 0.2;
+            
+            return Math.max(0, Math.min(1, fitness));
+        }
+        
+        // Initialize population
+        function initializePopulation() {
+            evolutionPopulation = [];
+            for (let i = 0; i < populationSize; i++) {
+                evolutionPopulation.push(new Individual());
+            }
+            evolutionGeneration = 0;
+        }
+        
+        // Evolve one generation
+        function evolveGeneration() {
+            // Evaluate fitness for all individuals
+            for (let ind of evolutionPopulation) {
+                applyIndividual(ind);
+                ind.fitness = calculateFitness(ind);
+            }
+            
+            // Sort by fitness
+            evolutionPopulation.sort((a, b) => b.fitness - a.fitness);
+            
+            // Update stats
+            currentBestFitness = evolutionPopulation[0].fitness;
+            const avgFitness = evolutionPopulation.reduce((sum, ind) => sum + ind.fitness, 0) / populationSize;
+            
+            document.getElementById('genNumber').textContent = evolutionGeneration;
+            document.getElementById('bestFitness').textContent = currentBestFitness.toFixed(3);
+            document.getElementById('avgFitness').textContent = avgFitness.toFixed(3);
+            
+            // Apply best individual
+            applyIndividual(evolutionPopulation[0]);
+            
+            // Create new generation
+            const newPopulation = [];
+            
+            // Elitism - keep best individuals
+            for (let i = 0; i < eliteCount; i++) {
+                newPopulation.push(evolutionPopulation[i]);
+            }
+            
+            // Fill rest with crossover and mutation
+            while (newPopulation.length < populationSize) {
+                // Tournament selection
+                const parent1 = tournamentSelect();
+                const parent2 = tournamentSelect();
+                
+                // Crossover
+                let child = parent1.crossover(parent2);
+                
+                // Mutation
+                child = child.mutate();
+                
+                newPopulation.push(child);
+            }
+            
+            evolutionPopulation = newPopulation;
+            evolutionGeneration++;
+            
+            console.log(`🧬 Generation ${evolutionGeneration}: Best Fitness = ${currentBestFitness.toFixed(3)}`);
+        }
+        
+        // Tournament selection
+        function tournamentSelect() {
+            const tournamentSize = 3;
+            let best = evolutionPopulation[Math.floor(Math.random() * evolutionPopulation.length)];
+            
+            for (let i = 1; i < tournamentSize; i++) {
+                const competitor = evolutionPopulation[Math.floor(Math.random() * evolutionPopulation.length)];
+                if (competitor.fitness > best.fitness) {
+                    best = competitor;
+                }
+            }
+            
+            return best;
+        }
+        
+        // Evolution control functions
+        function startEvolution() {
+            if (evolutionMode === 'off') {
+                alert('Please select an evolution mode first!');
+                return;
+            }
+            
+            if (!evolutionActive) {
+                initializePopulation();
+                evolutionActive = true;
+                evolutionInterval = setInterval(() => {
+                    evolveGeneration();
+                }, 2000); // Evolve every 2 seconds
+                console.log('🧬 Evolution engine started');
+            }
+        }
+        
+        function stopEvolution() {
+            if (evolutionActive) {
+                clearInterval(evolutionInterval);
+                evolutionActive = false;
+                console.log('🧬 Evolution engine stopped');
+            }
+        }
+        
+        function updateEvolutionMode() {
+            evolutionMode = document.getElementById('evolutionMode').value;
+            stopEvolution();
+            console.log('Evolution mode:', evolutionMode);
+        }
+        
+        function updatePopulation() {
+            populationSize = parseInt(document.getElementById('populationSize').value);
+            document.getElementById('populationValue').textContent = populationSize;
+        }
+        
+        function updateMutation() {
+            mutationRate = parseFloat(document.getElementById('mutationRate').value);
+            document.getElementById('mutationValue').textContent = mutationRate.toFixed(2);
+        }
+
+        // ===== START APPLICATION =====
+        window.addEventListener('load', init);
+        
+        console.log('%c∞ Quantum Canvas Ultimate v5.0', 'font-size: 20px; color: #FF9966; font-weight: bold;');
+        console.log('%cUniversal Physics & Music Engine Ready', 'font-size: 14px; color: #00FFAA;');
+    </script>
+</body>
+</html>
