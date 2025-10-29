@@ -1,3 +1,5 @@
+This is a work in progress, it's a for fun project. 
+
 # 🌌 Quantum Canvas Ultimate — Universal Physics & Music Engine v5.0
 
 Quantum Canvas Ultimate is a web application that creates a real-time, symbiotic experience between audio synthesis and 3D particle physics visualization. Musical parameters (tempo, scale, effects) influence the 3D particle system while physics metrics influence color, speed, and particle movement.
