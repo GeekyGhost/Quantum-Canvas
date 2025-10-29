@@ -92,6 +92,3 @@ Include any built-in presets or example configurations you want users to try. If
 
 ---
 
-## License
-
-Specify your preferred license here (for example: MIT).
